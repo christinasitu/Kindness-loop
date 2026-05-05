@@ -1,4 +1,4 @@
-// KINDNESS LOOP - DEBUGGED VERSION
+// KINDNESS LOOP - OBSTACLE VERSION
 
 let gameState = "start";
 
@@ -78,20 +78,26 @@ function drawStart() {
   fill(pink);
   textAlign(CENTER, CENTER);
   textSize(32);
-  text("KINDNESS LOOP", width / 2, 90);
+  text("KINDNESS LOOP", width / 2, 80);
 
   fill(yellow);
   textSize(16);
-  text("Collect ♥", width / 2, 170);
-  text("Give it to □ before time runs out", width / 2, 200);
-  text("Press SPACE near □ to give", width / 2, 230);
-  text("Avoid ■ obstacles", width / 2, 260);
-  text("✦ = powerup, SPACE to activate", width / 2, 290);
-  text("Powerups change movement", width / 2, 320);
+  text("Collect ♥", width / 2, 160);
+  text("Give ♥ to □ before time runs out", width / 2, 190);
+  text("Avoid ■ obstacles", width / 2, 220);
+  text("✦ changes movement mode", width / 2, 250);
+
+  fill(pink);
+  text("SPACE near □ = give", width / 2, 310);
+  text("SPACE near ✦ = change mode", width / 2, 340);
+  text("SPACE elsewhere = reverse direction", width / 2, 370);
+
+  fill(yellow);
+  text("horizontal → vertical → diagonal", width / 2, 405);
 
   fill(pink);
   textSize(18);
-  text("Press SPACE to start", width / 2, 400);
+  text("Press SPACE to start", width / 2, 450);
 }
 
 // ---------------- MAIN GAME ----------------
@@ -160,6 +166,12 @@ function drawPlayer() {
   }
 }
 
+function reverseDirection() {
+  xDir *= -1;
+  yDir *= -1;
+  message = "Direction reversed.";
+}
+
 // ---------------- HEART ----------------
 
 function drawHeart() {
@@ -216,13 +228,19 @@ function keyPressed() {
     if (gameState === "start") {
       gameState = "playing";
       message = "Collect ♥";
-    } else if (gameState === "playing") {
+    } 
+    
+    else if (gameState === "playing") {
       if (hasHeart && isNearCharacter()) {
         giveHeart();
       } else if (isNearPowerup()) {
         collectPowerup();
+      } else {
+        reverseDirection();
       }
-    } else if (gameState === "gameover") {
+    } 
+    
+    else if (gameState === "gameover") {
       restart();
     }
   }
@@ -273,8 +291,7 @@ function setupLevel() {
   let obstacleCount = min(level - 1, 6);
 
   for (let i = 0; i < obstacleCount; i++) {
-    let newObstacle = makeSafeObstacle();
-    obstacles.push(newObstacle);
+    obstacles.push(makeSafeObstacle());
   }
 }
 
@@ -286,7 +303,7 @@ function makeSafeObstacle() {
     ox = random(70, width - 70);
     oy = random(130, height - 70);
 
-    if (dist(ox, oy, playerX, playerY) > 90) {
+    if (dist(ox, oy, playerX, playerY) > 100) {
       break;
     }
   }
@@ -311,21 +328,18 @@ function moveAll() {
 
 function placeHeart() {
   let pos = getReachablePosition();
-
   heartX = pos.x;
   heartY = pos.y;
 }
 
 function placeCharacter() {
   let pos = getReachablePositionAwayFrom(heartX, heartY, 110);
-
   characterX = pos.x;
   characterY = pos.y;
 }
 
 function placePowerup() {
   let pos = getReachablePositionAwayFrom(characterX, characterY, 100);
-
   powerupX = pos.x;
   powerupY = pos.y;
 }
@@ -385,7 +399,7 @@ function isNearPowerup() {
 function collectPowerup() {
   toggleMode();
   powerupActive = false;
-  message = "Mode: " + moveMode;
+  message = "Mode changed to " + moveMode + ".";
 }
 
 function toggleMode() {
@@ -410,7 +424,9 @@ function updateObstacles() {
     rectMode(CENTER);
     rect(o.x, o.y, o.size, o.size);
 
-    o.x += o.speed * o.dir;
+    let speedMultiplier = moveMode === "diagonal" ? 0.7 : 1;
+
+    o.x += o.speed * o.dir * speedMultiplier;
 
     if (o.x < o.size || o.x > width - o.size) {
       o.dir *= -1;
