@@ -1,4 +1,4 @@
-// KINDNESS LOOP - OBSTACLE VERSION
+// THE KINDNESS LOOP
 
 let gameState = "start";
 
@@ -8,8 +8,9 @@ let levelTarget = 5;
 let message = "Collect kindness and pass it on.";
 
 let pink, yellow;
+let tileSize = 20;
 
-// Player
+// Player Variables
 let playerX = 250;
 let playerY = 250;
 let playerSize = 28;
@@ -18,34 +19,40 @@ let moveMode = "horizontal";
 let xDir = 1;
 let yDir = 1;
 
-// Heart
+// Heart variables
 let heartX = 120;
 let heartY = 250;
 let hasHeart = false;
 
-// Character
+// Character Variables
 let characterX = 390;
 let characterY = 250;
 let characterSize = 34;
 let giveDistance = 45;
 
-// Timer
+// Timer Variables
 let timerLimit = 10;
 let timer = 10;
 let timerStarted = false;
 let timerStartFrame = 0;
 
-// Powerup
+// Powerup Variables
 let powerupX = 250;
 let powerupY = 250;
 let powerupActive = true;
 
-// Obstacles
+// Obstacles Variables
 let obstacles = [];
 
-// Confetti
+// Confetti Variables
 let confetti = [];
 let confettiTimer = 0;
+
+// Level up text
+let levelUpMessage = "";
+
+
+//  -----------SETUP----------------------
 
 function setup() {
   let canvas = createCanvas(500, 500);
@@ -59,7 +66,7 @@ function setup() {
 }
 
 function draw() {
-  background(0);
+  drawBackground();
 
   if (gameState === "start") {
     drawStart();
@@ -72,32 +79,69 @@ function draw() {
   }
 }
 
+// BACKGROUND
+
+function drawBackground() {
+  background(0);
+
+  stroke(255, 79, 163, 40);
+  strokeWeight(1);
+
+  for (let x = 0; x < width; x += tileSize) {
+    line(x, 100, x, height);
+  }
+
+  for (let y = 100; y < height; y += tileSize) {
+    line(0, y, width, y);
+  }
+
+  noStroke();
+  fill(255, 230, 109, 100);
+
+  for (let i = 0; i < 18; i++) {
+    let sparkleX = (i * 71 + frameCount * 0.4) % width;
+    let sparkleY = 115 + ((i * 43) % (height - 135));
+    rect(sparkleX, sparkleY, 2, 2);
+  }
+}
+
 // ---------------- START SCREEN ----------------
 
 function drawStart() {
+  fill(0);
+  stroke(pink);
+  strokeWeight(3);
+  rectMode(CENTER);
+  rect(width / 2, height / 2, 405, 410);
+
+  noStroke();
   fill(pink);
   textAlign(CENTER, CENTER);
-  textSize(32);
-  text("KINDNESS LOOP", width / 2, 80);
+  textSize(34);
+  text("KINDNESS", width / 2, 62);
+  text("LOOP", width / 2, 100);
 
   fill(yellow);
-  textSize(16);
-  text("Collect ♥", width / 2, 160);
-  text("Give ♥ to □ before time runs out", width / 2, 190);
-  text("Avoid ■ obstacles", width / 2, 220);
-  text("✦ changes movement mode", width / 2, 250);
+  textSize(14);
+  text("Kindness only counts", width / 2, 145);
+  text("when it is passed on.", width / 2, 168);
 
   fill(pink);
-  text("SPACE near □ = give", width / 2, 310);
-  text("SPACE near ✦ = change mode", width / 2, 340);
-  text("SPACE elsewhere = reverse direction", width / 2, 370);
+  textSize(15);
+  text("Collect ♥", width / 2, 215);
+  text("Give ♥ to □", width / 2, 245);
+  text("Avoid pink blocks", width / 2, 275);
+  text("Use ✦ to change movement", width / 2, 305);
 
   fill(yellow);
-  text("horizontal → vertical → diagonal", width / 2, 405);
+  textSize(14);
+  text("SPACE near □ = give", width / 2, 350);
+  text("SPACE near ✦ = change mode", width / 2, 375);
+  text("SPACE elsewhere = reverse", width / 2, 400);
 
   fill(pink);
   textSize(18);
-  text("Press SPACE to start", width / 2, 450);
+  text("PRESS SPACE", width / 2, 455);
 }
 
 // ---------------- MAIN GAME ----------------
@@ -120,7 +164,7 @@ function drawGame() {
   drawUI();
 }
 
-// ---------------- PLAYER ----------------
+// PLAYER FUNCTIONS
 
 function updatePlayer() {
   if (moveMode === "horizontal") {
@@ -154,15 +198,24 @@ function updatePlayer() {
 }
 
 function drawPlayer() {
+  noFill();
+  stroke(yellow);
+  strokeWeight(2);
+  ellipse(playerX, playerY, playerSize + 8);
+
   fill(yellow);
   noStroke();
   ellipse(playerX, playerY, playerSize);
 
+  fill(0);
+  rectMode(CENTER);
+  rect(playerX, playerY, 6, 6);
+
   if (hasHeart) {
     fill(pink);
     textAlign(CENTER, CENTER);
-    textSize(20);
-    text("♥", playerX, playerY - 25);
+    textSize(22);
+    text("♥", playerX, playerY - 28);
   }
 }
 
@@ -172,14 +225,18 @@ function reverseDirection() {
   message = "Direction reversed.";
 }
 
-// ---------------- HEART ----------------
+// HEART LOGIC
 
 function drawHeart() {
   if (!hasHeart) {
-    fill(pink);
-    noStroke();
     textAlign(CENTER, CENTER);
-    textSize(26);
+
+    fill(255, 79, 163, 70);
+    textSize(42);
+    text("♥", heartX, heartY);
+
+    fill(pink);
+    textSize(28);
     text("♥", heartX, heartY);
   }
 }
@@ -194,20 +251,30 @@ function checkHeart() {
   }
 }
 
-// ---------------- CHARACTER ----------------
+// DRAWING CHARACTER/ PROXIM CHECK
 
 function drawCharacter() {
-  fill(yellow);
-  noStroke();
+  stroke(yellow);
+  strokeWeight(3);
+  fill(0);
   rectMode(CENTER);
+  rect(characterX, characterY, characterSize + 12, characterSize + 12);
+
+  noStroke();
+  fill(yellow);
   rect(characterX, characterY, characterSize, characterSize);
+
+  fill(0);
+  textAlign(CENTER, CENTER);
+  textSize(18);
+  text("♡", characterX, characterY);
 }
 
 function isNearCharacter() {
   return dist(playerX, playerY, characterX, characterY) < giveDistance;
 }
 
-// ---------------- TIMER ----------------
+// TIMER
 
 function updateTimer() {
   if (timerStarted) {
@@ -221,16 +288,14 @@ function updateTimer() {
   }
 }
 
-// ---------------- INPUT ----------------
+// IINPUT (CAN only use SPACEBAR)
 
 function keyPressed() {
   if (key === " ") {
     if (gameState === "start") {
       gameState = "playing";
       message = "Collect ♥";
-    } 
-    
-    else if (gameState === "playing") {
+    } else if (gameState === "playing") {
       if (hasHeart && isNearCharacter()) {
         giveHeart();
       } else if (isNearPowerup()) {
@@ -238,9 +303,7 @@ function keyPressed() {
       } else {
         reverseDirection();
       }
-    } 
-    
-    else if (gameState === "gameover") {
+    } else if (gameState === "gameover") {
       restart();
     }
   }
@@ -260,7 +323,7 @@ function giveHeart() {
   }
 }
 
-// ---------------- LEVELS ----------------
+// -------------------Make Levels
 
 function levelUp() {
   level++;
@@ -280,44 +343,13 @@ function levelUp() {
   setupLevel();
   createConfetti();
 
-  confettiTimer = 120;
+  levelUpMessage = "LEVEL " + level;
+  confettiTimer = 150;
   gameState = "confetti";
   message = "Level " + level + " unlocked.";
 }
 
-function setupLevel() {
-  obstacles = [];
-
-  let obstacleCount = min(level - 1, 6);
-
-  for (let i = 0; i < obstacleCount; i++) {
-    obstacles.push(makeSafeObstacle());
-  }
-}
-
-function makeSafeObstacle() {
-  let ox = random(70, width - 70);
-  let oy = random(130, height - 70);
-
-  for (let attempts = 0; attempts < 30; attempts++) {
-    ox = random(70, width - 70);
-    oy = random(130, height - 70);
-
-    if (dist(ox, oy, playerX, playerY) > 100) {
-      break;
-    }
-  }
-
-  return {
-    x: ox,
-    y: oy,
-    size: 22,
-    dir: random([1, -1]),
-    speed: random(1, 1.8 + level * 0.2)
-  };
-}
-
-// ---------------- FAIR PLACEMENT ----------------
+//  PLACEMENT LOGISTICS (make it fair and reachable)
 
 function moveAll() {
   placeHeart();
@@ -346,23 +378,14 @@ function placePowerup() {
 
 function getReachablePosition() {
   if (moveMode === "horizontal") {
-    return {
-      x: random(60, width - 60),
-      y: playerY
-    };
+    return { x: random(60, width - 60), y: playerY };
   }
 
   if (moveMode === "vertical") {
-    return {
-      x: playerX,
-      y: random(130, height - 60)
-    };
+    return { x: playerX, y: random(130, height - 60) };
   }
 
-  return {
-    x: random(60, width - 60),
-    y: random(130, height - 60)
-  };
+  return { x: random(60, width - 60), y: random(130, height - 60) };
 }
 
 function getReachablePositionAwayFrom(avoidX, avoidY, minDistance) {
@@ -379,15 +402,24 @@ function getReachablePositionAwayFrom(avoidX, avoidY, minDistance) {
   return pos;
 }
 
-// ---------------- POWERUP ----------------
+// POWERUP Logistics
 
 function drawPowerup() {
   if (powerupActive) {
-    fill(pink);
+    stroke(pink);
+    strokeWeight(2);
+    noFill();
+    rectMode(CENTER);
+    rect(powerupX, powerupY, 26, 26);
+
     noStroke();
+    fill(pink);
+    rect(powerupX, powerupY, 12, 12);
+
+    fill(yellow);
     textAlign(CENTER, CENTER);
-    textSize(24);
-    text("✦", powerupX, powerupY);
+    textSize(14);
+    text("✦", powerupX, powerupY - 1);
   }
 }
 
@@ -414,41 +446,88 @@ function toggleMode() {
   moveAll();
 }
 
-// ---------------- OBSTACLES ----------------
+//Making Moving Obstacles
+
+function setupLevel() {
+  obstacles = [];
+
+  let obstacleCount = min(level + 1, 7);
+
+  for (let i = 0; i < obstacleCount; i++) {
+    obstacles.push(makeSafeObstacle());
+  }
+}
+
+function makeSafeObstacle() {
+  let ox = random(70, width - 70);
+  let oy = random(130, height - 70);
+
+  for (let attempts = 0; attempts < 30; attempts++) {
+    ox = random(70, width - 70);
+    oy = random(130, height - 70);
+
+    if (dist(ox, oy, playerX, playerY) > 130) {
+      break;
+    }
+  }
+
+  return {
+    x: ox,
+    y: oy,
+    size: tileSize,
+    dirX: random([1, -1]),
+    dirY: random([1, -1]),
+    speedX: 2,
+    speedY: 2
+  };
+}
 
 function updateObstacles() {
-  fill(pink);
-  noStroke();
-
   for (let o of obstacles) {
+    stroke(pink);
+    strokeWeight(2);
+    noFill();
     rectMode(CENTER);
+    rect(o.x, o.y, o.size + 4, o.size + 4);
+
+    noStroke();
+    fill(pink);
     rect(o.x, o.y, o.size, o.size);
 
-    let speedMultiplier = moveMode === "diagonal" ? 0.7 : 1;
+    if (level < 3) {
+      o.x += o.speedX * o.dirX;
+    } else {
+      o.x += o.speedX * o.dirX;
+      o.y += o.speedY * o.dirY;
+    }
 
-    o.x += o.speed * o.dir * speedMultiplier;
+    if (o.x < o.size / 2 || o.x > width - o.size / 2) {
+      o.dirX *= -1;
+    }
 
-    if (o.x < o.size || o.x > width - o.size) {
-      o.dir *= -1;
+    if (o.y < 110 || o.y > height - o.size / 2) {
+      o.dirY *= -1;
     }
   }
 }
 
 function checkObstacleCollision() {
   for (let o of obstacles) {
-    if (dist(playerX, playerY, o.x, o.y) < playerSize / 2 + o.size / 2) {
+    let d = dist(playerX, playerY, o.x, o.y);
+
+    if (d < playerSize / 2 + o.size / 2 - 5) {
       gameState = "gameover";
       message = "Kindness was interrupted.";
     }
   }
 }
 
-// ---------------- CONFETTI ----------------
+//CONFETTI VISUAL
 
 function createConfetti() {
   confetti = [];
 
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 45; i++) {
     confetti.push({
       x: width / 2,
       y: height / 2,
@@ -460,9 +539,26 @@ function createConfetti() {
 }
 
 function drawConfettiState() {
-  background(0);
+  drawBackground();
 
-  drawUI();
+  fill(0);
+  stroke(pink);
+  strokeWeight(3);
+  rectMode(CENTER);
+  rect(width / 2, height / 2, 330, 170);
+
+  noStroke();
+  fill(pink);
+  textAlign(CENTER, CENTER);
+  textSize(34);
+  text(levelUpMessage, width / 2, height / 2 - 45);
+
+  fill(yellow);
+  textSize(15);
+  text("Timer reduced to " + timerLimit + " seconds", width / 2, height / 2 - 10);
+  text("Movement: " + moveMode, width / 2, height / 2 + 18);
+  text("Keep passing kindness", width / 2, height / 2 + 46);
+
   updateConfetti();
 
   confettiTimer--;
@@ -493,44 +589,66 @@ function updateConfetti() {
   }
 }
 
-// ---------------- UI ----------------
+// Game Display/ UI
 
 function drawUI() {
+  fill(0);
+  stroke(pink);
+  strokeWeight(2);
+  rectMode(CORNER);
+  rect(12, 12, 185, hasHeart ? 110 : 88);
+
+  noStroke();
   fill(pink);
   textAlign(LEFT, TOP);
-  textSize(16);
-  text("Score: " + score, 20, 20);
-  text("Level: " + level, 20, 42);
-  text("Mode: " + moveMode, 20, 64);
+  textSize(15);
+  text("SCORE  " + score, 25, 25);
+  text("LEVEL  " + level, 25, 47);
+  text("MODE   " + moveMode, 25, 69);
 
   if (hasHeart) {
-    text("Timer: " + timer, 20, 86);
+    fill(yellow);
+    text("TIME   " + timer, 25, 91);
   }
 
+  fill(0);
+  stroke(yellow);
+  strokeWeight(2);
+  rectMode(CENTER);
+  rect(width / 2, height - 28, 360, 34);
+
+  noStroke();
   fill(yellow);
-  textAlign(CENTER, BOTTOM);
+  textAlign(CENTER, CENTER);
   textSize(14);
-  text(message, width / 2, height - 20);
+  text(message, width / 2, height - 28);
 }
 
-// ---------------- GAME OVER ----------------
+// -Game Over Mode
 
 function drawGameOver() {
+  fill(0);
+  stroke(pink);
+  strokeWeight(3);
+  rectMode(CENTER);
+  rect(width / 2, height / 2, 360, 210);
+
+  noStroke();
   fill(pink);
   textAlign(CENTER, CENTER);
   textSize(34);
-  text("GAME OVER", width / 2, height / 2 - 35);
+  text("GAME OVER", width / 2, height / 2 - 55);
 
   fill(yellow);
   textSize(16);
-  text(message, width / 2, height / 2 + 5);
-  text("Final score: " + score, width / 2, height / 2 + 35);
+  text(message, width / 2, height / 2 - 10);
+  text("Final score: " + score, width / 2, height / 2 + 25);
 
   fill(pink);
-  text("Press SPACE to restart", width / 2, height / 2 + 85);
+  text("Press SPACE to restart", width / 2, height / 2 + 75);
 }
 
-// ---------------- RESET ----------------
+// Restart Mode
 
 function restart() {
   gameState = "start";
