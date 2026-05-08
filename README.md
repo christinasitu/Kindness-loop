@@ -2,9 +2,9 @@ THE KINDNESS LOOP
 
 ## Overview 
 
-The Kindness Loop is a one-button arcade style game.
+The Kindness Loop is a one-button arcade-style game.
 
-The game explores the idea that kindness only gains value when it's redistributed rather than kept for yourself.
+The game explores the idea that kindness only gains value when it is redistributed rather than kept for yourself.
 
 ## Concept
 Players collect hearts and must pass them to another character before the timer runs out.
@@ -30,7 +30,7 @@ SPACEBAR is used to:
 
 SPACE near □        Give heart
 
-SPACE near ✦	    A power up that changes movement 
+SPACE near ✦	    Activate powerup (affects movement)
 
 SPACE elsewhere	    Reverse direction
 
