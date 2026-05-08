@@ -176,6 +176,10 @@ function updatePlayer() {
     playerY += playerSpeed * yDir;
   }
 
+  bouncePlayer();
+}
+
+function bouncePlayer() {
   if (playerX > width - playerSize / 2) {
     playerX = width - playerSize / 2;
     xDir *= -1;
@@ -288,7 +292,7 @@ function updateTimer() {
   }
 }
 
-// IINPUT (CAN only use SPACEBAR)
+// INPUT (CAN only use SPACEBAR)
 
 function keyPressed() {
   if (key === " ") {
@@ -332,11 +336,9 @@ function levelUp() {
   timer = timerLimit;
   playerSpeed = 2 + level * 0.35;
 
-  if (level === 1) {
-    moveMode = "horizontal";
-  } else if (level === 2) {
+  if (level === 2) {
     moveMode = "vertical";
-  } else {
+  } else if (level >= 3) {
     moveMode = "diagonal";
   }
 
@@ -365,13 +367,13 @@ function placeHeart() {
 }
 
 function placeCharacter() {
-  let pos = getReachablePositionAwayFrom(heartX, heartY, 110);
+  let pos = getReachablePositionAwayFrom(heartX, heartY, 115);
   characterX = pos.x;
   characterY = pos.y;
 }
 
 function placePowerup() {
-  let pos = getReachablePositionAwayFrom(characterX, characterY, 100);
+  let pos = getReachablePositionAwayFrom(characterX, characterY, 105);
   powerupX = pos.x;
   powerupY = pos.y;
 }
@@ -389,17 +391,29 @@ function getReachablePosition() {
 }
 
 function getReachablePositionAwayFrom(avoidX, avoidY, minDistance) {
-  let pos = getReachablePosition();
+  let bestPos = getReachablePosition();
 
   for (let attempts = 0; attempts < 40; attempts++) {
-    pos = getReachablePosition();
+    let pos = getReachablePosition();
 
-    if (dist(pos.x, pos.y, avoidX, avoidY) > minDistance) {
+    if (dist(pos.x, pos.y, avoidX, avoidY) > minDistance && !isOnObstacle(pos.x, pos.y)) {
       return pos;
+    }
+
+    bestPos = pos;
+  }
+
+  return bestPos;
+}
+
+function isOnObstacle(x, y) {
+  for (let o of obstacles) {
+    if (dist(x, y, o.x, o.y) < o.size + 35) {
+      return true;
     }
   }
 
-  return pos;
+  return false;
 }
 
 // POWERUP Logistics
@@ -446,7 +460,7 @@ function toggleMode() {
   moveAll();
 }
 
-//Making Moving Obstacles
+// Making Moving Obstacles
 
 function setupLevel() {
   obstacles = [];
@@ -462,11 +476,11 @@ function makeSafeObstacle() {
   let ox = random(70, width - 70);
   let oy = random(130, height - 70);
 
-  for (let attempts = 0; attempts < 30; attempts++) {
+  for (let attempts = 0; attempts < 40; attempts++) {
     ox = random(70, width - 70);
     oy = random(130, height - 70);
 
-    if (dist(ox, oy, playerX, playerY) > 130) {
+    if (dist(ox, oy, playerX, playerY) > 140) {
       break;
     }
   }
@@ -477,37 +491,43 @@ function makeSafeObstacle() {
     size: tileSize,
     dirX: random([1, -1]),
     dirY: random([1, -1]),
-    speedX: 2,
-    speedY: 2
+    speedX: 1.4 + level * 0.1,
+    speedY: 1.4 + level * 0.1
   };
 }
 
 function updateObstacles() {
   for (let o of obstacles) {
-    stroke(pink);
-    strokeWeight(2);
-    noFill();
-    rectMode(CENTER);
-    rect(o.x, o.y, o.size + 4, o.size + 4);
+    drawObstacle(o);
+    moveObstacle(o);
+  }
+}
 
-    noStroke();
-    fill(pink);
-    rect(o.x, o.y, o.size, o.size);
+function drawObstacle(o) {
+  stroke(pink);
+  strokeWeight(2);
+  noFill();
+  rectMode(CENTER);
+  rect(o.x, o.y, o.size + 4, o.size + 4);
 
-    if (level < 3) {
-      o.x += o.speedX * o.dirX;
-    } else {
-      o.x += o.speedX * o.dirX;
-      o.y += o.speedY * o.dirY;
-    }
+  noStroke();
+  fill(pink);
+  rect(o.x, o.y, o.size, o.size);
+}
 
-    if (o.x < o.size / 2 || o.x > width - o.size / 2) {
-      o.dirX *= -1;
-    }
+function moveObstacle(o) {
+  o.x += o.speedX * o.dirX;
 
-    if (o.y < 110 || o.y > height - o.size / 2) {
-      o.dirY *= -1;
-    }
+  if (level >= 3) {
+    o.y += o.speedY * o.dirY;
+  }
+
+  if (o.x < o.size / 2 || o.x > width - o.size / 2) {
+    o.dirX *= -1;
+  }
+
+  if (o.y < 110 || o.y > height - o.size / 2) {
+    o.dirY *= -1;
   }
 }
 
@@ -522,7 +542,7 @@ function checkObstacleCollision() {
   }
 }
 
-//CONFETTI VISUAL
+// CONFETTI VISUAL
 
 function createConfetti() {
   confetti = [];
